@@ -5,15 +5,7 @@ output:
     keep_md: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 
-if (!require("tidyverse")) install.packages("tidyverse")
-library("tidyverse")
-
-if (!require("ggplot2")) install.packages("ggplot2")
-library("ggplot2")
-```
 
 ## Introduction
 
@@ -38,8 +30,8 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 ## Loading and preprocessing the data
 
-```{r readdata}
 
+```r
 if(!file.exists("repdata_data_activity.zip")){
   download.file(
 "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip",
@@ -62,7 +54,6 @@ df_activity <- df_activity %>%
                           ifelse(weekday=="Saturday", 7,0
                           )))))))) %>%
         mutate(weekday = fct_reorder(weekday,order))
-
 ```
 
 
@@ -74,8 +65,8 @@ For this part of the assignment, you can ignore the missing values in the datase
 
 2. Calculate and report the mean and median total number of steps taken per day
 
-```{r problem 1}
 
+```r
 p <- ggplot(df_activity,aes(x = weekday, y = steps)) +
         geom_histogram(stat= "identity") +
         xlab("Weekday") + 
@@ -84,19 +75,51 @@ p <- ggplot(df_activity,aes(x = weekday, y = steps)) +
         theme(
                 axis.text.x=element_text(angle = 90, vjust = 0.5, hjust = 1), 
                 plot.title = element_text(size=rel(1.5),face="bold",hjust = 0.5))
+```
 
+```
+## Warning: Ignoring unknown parameters: binwidth, bins, pad
+```
+
+```r
 p
+```
 
+```
+## Warning: Removed 2304 rows containing missing values (position_stack).
+```
+
+![](PA1_template_files/figure-html/problem 1-1.png)<!-- -->
+
+```r
 df_activity_summary <- df_activity %>%
         group_by(weekday) %>%
         mutate(mean = round(mean(steps,na.rm = TRUE),0)) %>%
         mutate(median = median(steps, na.rm = TRUE)) %>%
         summarise(weekday,mean,median) %>%
         unique()
-        
+```
+
+```
+## `summarise()` regrouping output by 'weekday' (override with `.groups` argument)
+```
+
+```r
 df_activity_summary
+```
 
-
+```
+## # A tibble: 7 x 3
+## # Groups:   weekday [7]
+##   weekday    mean median
+##   <fct>     <dbl>  <dbl>
+## 1 Sunday       43      0
+## 2 Monday       35      0
+## 3 Tuesday      31      0
+## 4 Wednesday    41      0
+## 5 Thursday     29      0
+## 6 Friday       43      0
+## 7 Saturday     44      0
 ```
 
 ## Problem 2: What is the average daily activity pattern?
@@ -107,8 +130,8 @@ df_activity_summary
 
 ANSWER:  The 835 - 840 minute interval has the maximum number of steps
 
-```{r problem 2}
 
+```r
 df_activity <- df_activity %>%
   group_by(interval) %>%
   mutate(mean_interval = mean(steps,na.rm = TRUE)) %>%
@@ -124,8 +147,9 @@ p <- ggplot(df_activity,aes(x = interval, y = mean_interval)) +
                 plot.title = element_text(size=rel(1.5),face="bold",hjust = 0.5))
 
 p
-
 ```
+
+![](PA1_template_files/figure-html/problem 2-1.png)<!-- -->
 
 
 ## Imputing missing values
@@ -142,8 +166,8 @@ Make a histogram of the total number of steps taken each day and Calculate and r
 
 ANSWER:  The mean and medians did not change, but the total number of steps increased dramatically.
 
-```{r problem 3}
 
+```r
 countNAs <- sum(ifelse(rowSums(is.na(df_activity))>=1,1,0))
 
 
@@ -161,10 +185,31 @@ df_activity_complete_summary <- df_activity_complete %>%
         mutate(median = median(steps)) %>%
         summarise(weekday,mean,median) %>%
         unique()
-        
+```
+
+```
+## `summarise()` regrouping output by 'weekday' (override with `.groups` argument)
+```
+
+```r
 df_activity_complete_summary
+```
 
+```
+## # A tibble: 7 x 3
+## # Groups:   weekday [7]
+##   weekday    mean median
+##   <fct>     <dbl>  <dbl>
+## 1 Sunday       42      0
+## 2 Monday       35      0
+## 3 Tuesday      31      0
+## 4 Wednesday    41      0
+## 5 Thursday     30      0
+## 6 Friday       42      0
+## 7 Saturday     43      0
+```
 
+```r
 p <- ggplot(df_activity_complete,aes(x = weekday, y = steps)) +
         geom_histogram(stat= "identity") +
         xlab("Weekday") + 
@@ -173,15 +218,22 @@ p <- ggplot(df_activity_complete,aes(x = weekday, y = steps)) +
         theme(
                 axis.text.x=element_text(angle = 90, vjust = 0.5, hjust = 1), 
                 plot.title = element_text(size=rel(1.5),face="bold",hjust = 0.5))
-
-p
+```
 
 ```
+## Warning: Ignoring unknown parameters: binwidth, bins, pad
+```
+
+```r
+p
+```
+
+![](PA1_template_files/figure-html/problem 3-1.png)<!-- -->
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r problem 4}
 
+```r
 df_activity_complete_p4 <- df_activity_complete %>%
         mutate(difference = ifelse((weekday == "Saturday" | weekday == "Sunday"),"weekend","weekday")) %>%
         group_by(difference,interval) %>%
@@ -198,5 +250,6 @@ p <- ggplot(df_activity_complete_p4,aes(x = interval, y = difference_mean)) +
                 plot.title = element_text(size=rel(1.5),face="bold",hjust = 0.5))
 
 p
-
 ```
+
+![](PA1_template_files/figure-html/problem 4-1.png)<!-- -->
